@@ -51,14 +51,30 @@ It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus
 
 | Language | Tests | Run |
 |----------|:-----:|-----|
-| Python | 16 | `cd python && pytest -q` |
+| Python | 23 | `cd python && pytest -q` |
 | C# (.NET 10) | 10 | `cd csharp && dotnet test` |
 | Java (17+) | 10 | `cd java && mvn test` |
 
-The core cost/aggregation logic is pure and identical across all three; the creep detector and OTel adapter are Python-side.
+The core cost/aggregation logic - including creep detection and the pricing
+providers below - is pure and identical across all three; the OTel adapter is
+Python-side.
 
-## Notes
+## Pricing providers
 
-- Prices are a static table - wire to a live pricing feed for production.
+Costs aren't rated against a live market feed - there isn't one for tokens; list
+prices change a few times a year. token-lens follows the metering pattern real
+billing systems use: count usage, then rate it against a versioned *price book*
+behind a small provider interface.
+
+- `StaticPricing` - the embedded default table (always available).
+- `FilePricing` - a versioned JSON price book (see `prices.sample.json`) where
+  each entry carries an `effective_from`, so a usage record is rated against the
+  price in effect at *its* `timestamp` (point-in-time rating for back-dated
+  recomputes).
+- `ChainedPricing` - try providers in order and fall back to the embedded table,
+  so wiring a remote catalog never risks a hard billing failure.
+
+`cost_of(model, in, out)` still works unchanged and uses `StaticPricing` by
+default. The provider model is mirrored across all three languages.
 
 Part of [parag-labs](https://github.com/parag-labs) - small, focused tools for building AI systems you can trust.
