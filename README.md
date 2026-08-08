@@ -13,7 +13,9 @@ Once you have more than one feature calling an LLM, your bill becomes a black bo
 - **Cost math** from a per-model price table (USD / 1M tokens).
 - **Attribution** - aggregate by `feature`, `tenant`, or `model`.
 - **Budget gate** - non-zero exit if total cost exceeds a budget (drop into CI).
-- **Anomaly detection** - flag any dimension whose cost exceeds N× the median.
+- **Anomaly detection** - flag any dimension whose cost exceeds N× the median (expensive relative to its peers right now).
+- **Creep detection** - compare a recent time window against an earlier baseline (cost rate, $/sec) to catch a dimension that's slowly ramping up even while it's still cheaper than the noisy ones.
+- **OpenTelemetry ingest** - map real `gen_ai.*` GenAI spans into the JSONL usage format, so you feed live traces in instead of hand-writing the log.
 
 ## Run it (Python)
 
@@ -30,20 +32,33 @@ TokenLens report  (by feature)
     search           $0.0026  2 calls  11200 tok  200.0ms avg
 ```
 
+Add `--creep-factor 2.0` to also flag dimensions whose recent cost rate is rising over time (needs a `timestamp` on each record).
+
+## Feeding real traces (OpenTelemetry)
+
+If your app emits OpenTelemetry GenAI spans, wire the exporter into your tracer and it appends usage records straight to the JSONL log:
+
+```python
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from otel_exporter import TokenLensSpanExporter
+
+provider.add_span_processor(BatchSpanProcessor(TokenLensSpanExporter("usage.jsonl")))
+```
+
+It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus `prompt`/`completion` aliases) and derives latency and timestamp from the span. No OTel SDK is required to use the mapping helpers in tests.
+
 ## Three languages, one behavior
 
 | Language | Tests | Run |
 |----------|:-----:|-----|
-| Python | 8 | `cd python && pytest -q` |
+| Python | 16 | `cd python && pytest -q` |
 | C# (.NET 10) | 7 | `cd csharp && dotnet test` |
 | Java (17+) | 7 | `cd java && mvn test` |
 
-The core (pricing, aggregation, anomaly detection) is pure logic, so all three produce identical numbers.
+The core cost/aggregation logic is pure and identical across all three; the creep detector and OTel adapter are Python-side.
 
-## Known limitations / next
+## Notes
 
 - Prices are a static table - wire to a live pricing feed for production.
-- Anomaly detection is median-based; a rolling time-window baseline would catch gradual creep.
-- No persistence yet - pipe real traces from an OTel exporter into the JSONL format.
 
 Part of [parag-labs](https://github.com/parag-labs) - small, focused tools for building AI systems you can trust.
