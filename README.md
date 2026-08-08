@@ -52,7 +52,7 @@ It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus
 | Language | Tests | Run |
 |----------|:-----:|-----|
 | Python | 23 | `cd python && pytest -q` |
-| C# (.NET 10) | 10 | `cd csharp && dotnet test` |
+| C# (.NET 10) | 15 | `cd csharp && dotnet test` |
 | Java (17+) | 10 | `cd java && mvn test` |
 
 The core cost/aggregation logic - including creep detection and the pricing
