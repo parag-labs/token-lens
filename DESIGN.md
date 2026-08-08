@@ -21,6 +21,10 @@ those dimensions, a budget gate, and a heads-up when something is abnormal. Goal
    distinct dimension values there are, not on the record count.
 4. The same behavior in Python, C#, and Java.
 
+![cost & latency attribution](docs/diagrams/attribution-flow.png)
+
+*(Source: [`docs/diagrams/attribution-flow.excalidraw`](docs/diagrams/attribution-flow.excalidraw) - editable in [excalidraw](https://aka.ms/excalidraw).)*
+
 ## Key design decisions
 
 **Single-pass aggregation into per-dimension buckets.** `aggregate` walks the
