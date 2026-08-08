@@ -166,13 +166,41 @@ public final class Pricing {
     }
 
     // Illustrative list prices (USD / 1M tokens). Update as vendors change them.
-    public static final Map<String, ModelPrice> PRICES = Map.of(
-            "gpt-4o", new ModelPrice(2.50, 10.00),
-            "gpt-4o-mini", new ModelPrice(0.15, 0.60),
-            "o3-mini", new ModelPrice(1.10, 4.40),
-            "claude-3.7-sonnet", new ModelPrice(3.00, 15.00),
-            "claude-3.5-haiku", new ModelPrice(0.80, 4.00),
-            "llama-3.3-70b", new ModelPrice(0.20, 0.20));
+    public static final Map<String, ModelPrice> PRICES = Map.ofEntries(
+            // OpenAI
+            Map.entry("gpt-4o", new ModelPrice(2.5, 10.0)),
+            Map.entry("gpt-4o-mini", new ModelPrice(0.15, 0.6)),
+            Map.entry("gpt-4.1", new ModelPrice(2.0, 8.0)),
+            Map.entry("gpt-4.1-mini", new ModelPrice(0.4, 1.6)),
+            Map.entry("gpt-4.1-nano", new ModelPrice(0.1, 0.4)),
+            Map.entry("o3", new ModelPrice(2.0, 8.0)),
+            Map.entry("o3-mini", new ModelPrice(1.1, 4.4)),
+            Map.entry("o4-mini", new ModelPrice(1.1, 4.4)),
+            // Anthropic
+            Map.entry("claude-opus-4", new ModelPrice(15.0, 75.0)),
+            Map.entry("claude-sonnet-4", new ModelPrice(3.0, 15.0)),
+            Map.entry("claude-3.7-sonnet", new ModelPrice(3.0, 15.0)),
+            Map.entry("claude-3.5-sonnet", new ModelPrice(3.0, 15.0)),
+            Map.entry("claude-3.5-haiku", new ModelPrice(0.8, 4.0)),
+            Map.entry("claude-3-haiku", new ModelPrice(0.25, 1.25)),
+            // Google
+            Map.entry("gemini-2.5-pro", new ModelPrice(1.25, 10.0)),
+            Map.entry("gemini-2.5-flash", new ModelPrice(0.3, 2.5)),
+            Map.entry("gemini-2.0-flash", new ModelPrice(0.1, 0.4)),
+            Map.entry("gemini-1.5-pro", new ModelPrice(1.25, 5.0)),
+            Map.entry("gemini-1.5-flash", new ModelPrice(0.075, 0.3)),
+            // Meta Llama
+            Map.entry("llama-3.3-70b", new ModelPrice(0.2, 0.2)),
+            Map.entry("llama-3.1-405b", new ModelPrice(3.5, 3.5)),
+            Map.entry("llama-3.1-8b", new ModelPrice(0.05, 0.05)),
+            // Mistral
+            Map.entry("mistral-large", new ModelPrice(2.0, 6.0)),
+            Map.entry("mistral-small", new ModelPrice(0.2, 0.6)),
+            // DeepSeek
+            Map.entry("deepseek-chat", new ModelPrice(0.27, 1.1)),
+            Map.entry("deepseek-reasoner", new ModelPrice(0.55, 2.19)),
+            // xAI
+            Map.entry("grok-2", new ModelPrice(2.0, 10.0)));
 
     /** The default provider used by {@link #costOf}. */
     public static final PricingProvider DEFAULT = new StaticPricing();
