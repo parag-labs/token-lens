@@ -64,7 +64,7 @@ order-independent creep detection.
 
 ## Design notes and numbers
 
-- **[RFC.md](RFC.md)** - single-pass aggregation, why median (not mean) for
+- **[DESIGN.md](DESIGN.md)** - single-pass aggregation, why median (not mean) for
   anomalies, timestamp-binned creep detection, pricing-as-config, and the non-goals.
 - **[BENCHMARKS.md](BENCHMARKS.md)** - measured memory-vs-cardinality (the key
   scaling property) and aggregation throughput, with graphs. Reproduce with
