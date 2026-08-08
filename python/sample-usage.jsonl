@@ -1,0 +1,5 @@
+{"model": "gpt-4o", "input_tokens": 12000, "output_tokens": 3000, "latency_ms": 820, "feature": "summarize", "tenant": "acme"}
+{"model": "gpt-4o-mini", "input_tokens": 4000, "output_tokens": 900, "latency_ms": 190, "feature": "search", "tenant": "acme"}
+{"model": "gpt-4o-mini", "input_tokens": 5200, "output_tokens": 1100, "latency_ms": 210, "feature": "search", "tenant": "globex"}
+{"model": "claude-3.7-sonnet", "input_tokens": 30000, "output_tokens": 8000, "latency_ms": 1400, "feature": "report-gen", "tenant": "acme"}
+{"model": "gpt-4o", "input_tokens": 9000, "output_tokens": 2500, "latency_ms": 760, "feature": "summarize", "tenant": "globex"}
