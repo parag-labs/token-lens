@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.tokenlens.Tracer.Creep;
 import com.tokenlens.Tracer.DimensionStat;
 import com.tokenlens.Tracer.UsageRecord;
 
@@ -88,5 +89,47 @@ class TokenLensTest {
                 new UsageRecord("gpt-4o-mini", 10, 10, 300, "f", "t"));
         Map<String, DimensionStat> stats = Tracer.aggregate(records, "feature");
         assertEquals(200.0, stats.get("f").avgLatencyMs());
+    }
+
+    private static UsageRecord rec(String feature, long outTokens, double ts) {
+        return new UsageRecord("gpt-4o-mini", 0, outTokens, 10.0, feature, "t", ts);
+    }
+
+    @Test
+    void creepFlagsARisingDimension() {
+        List<UsageRecord> records = new java.util.ArrayList<>();
+        for (int t = 0; t < 100; t += 10) {
+            records.add(rec("search", 1000, t));
+            records.add(rec("summarize", 1000, t));
+        }
+        for (int t = 100; t < 200; t += 10) {
+            records.add(rec("search", 1000, t));
+            records.add(rec("summarize", 5000, t));
+        }
+        List<Creep> creeps = Tracer.detectCreep(records, "feature", 100.0, 2.0);
+        assertTrue(creeps.stream().anyMatch(c -> c.key().equals("summarize")));
+        assertFalse(creeps.stream().anyMatch(c -> c.key().equals("search")));
+    }
+
+    @Test
+    void creepIgnoresBrandNewDimension() {
+        List<UsageRecord> records = new java.util.ArrayList<>();
+        for (int t = 0; t < 100; t += 10) {
+            records.add(rec("steady", 1000, t));
+        }
+        for (int t = 100; t < 200; t += 10) {
+            records.add(rec("steady", 1000, t));
+            records.add(rec("brandnew", 9000, t));
+        }
+        List<Creep> creeps = Tracer.detectCreep(records, "feature", 100.0, 2.0);
+        assertFalse(creeps.stream().anyMatch(c -> c.key().equals("brandnew")));
+    }
+
+    @Test
+    void creepNeedsTimestamps() {
+        List<UsageRecord> records = List.of(
+                new UsageRecord("gpt-4o-mini", 10, 10, 5.0, "x", "t"),
+                new UsageRecord("gpt-4o-mini", 10, 10, 5.0, "x", "t"));
+        assertTrue(Tracer.detectCreep(records, "feature", null, 2.0).isEmpty());
     }
 }
