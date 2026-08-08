@@ -172,12 +172,40 @@ public static class Pricing
     public static readonly IReadOnlyDictionary<string, ModelPrice> Prices =
         new Dictionary<string, ModelPrice>
         {
+            // OpenAI
             ["gpt-4o"] = new(2.50, 10.00),
             ["gpt-4o-mini"] = new(0.15, 0.60),
+            ["gpt-4.1"] = new(2.00, 8.00),
+            ["gpt-4.1-mini"] = new(0.40, 1.60),
+            ["gpt-4.1-nano"] = new(0.10, 0.40),
+            ["o3"] = new(2.00, 8.00),
             ["o3-mini"] = new(1.10, 4.40),
+            ["o4-mini"] = new(1.10, 4.40),
+            // Anthropic
+            ["claude-opus-4"] = new(15.00, 75.00),
+            ["claude-sonnet-4"] = new(3.00, 15.00),
             ["claude-3.7-sonnet"] = new(3.00, 15.00),
+            ["claude-3.5-sonnet"] = new(3.00, 15.00),
             ["claude-3.5-haiku"] = new(0.80, 4.00),
+            ["claude-3-haiku"] = new(0.25, 1.25),
+            // Google
+            ["gemini-2.5-pro"] = new(1.25, 10.00),
+            ["gemini-2.5-flash"] = new(0.30, 2.50),
+            ["gemini-2.0-flash"] = new(0.10, 0.40),
+            ["gemini-1.5-pro"] = new(1.25, 5.00),
+            ["gemini-1.5-flash"] = new(0.075, 0.30),
+            // Meta Llama
             ["llama-3.3-70b"] = new(0.20, 0.20),
+            ["llama-3.1-405b"] = new(3.50, 3.50),
+            ["llama-3.1-8b"] = new(0.05, 0.05),
+            // Mistral
+            ["mistral-large"] = new(2.00, 6.00),
+            ["mistral-small"] = new(0.20, 0.60),
+            // DeepSeek
+            ["deepseek-chat"] = new(0.27, 1.10),
+            ["deepseek-reasoner"] = new(0.55, 2.19),
+            // xAI
+            ["grok-2"] = new(2.00, 10.00),
         };
 
     /// <summary>The default provider used by <see cref="CostOf"/>.</summary>
