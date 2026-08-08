@@ -20,6 +20,7 @@ class UsageRecord:
     latency_ms: float
     feature: str = "unknown"
     tenant: str = "unknown"
+    timestamp: float = 0.0  # epoch seconds; used by the rolling-window creep detector
 
     @property
     def cost(self) -> float:
@@ -54,6 +55,22 @@ class Anomaly:
     metric: str
     value: float
     baseline: float
+    factor: float
+
+
+@dataclass
+class Creep:
+    """A dimension whose cost *rate* is rising over time (gradual creep).
+
+    The plain median detector only catches a dimension that is expensive relative
+    to its peers right now. It misses one that is slowly growing but still cheaper
+    than the noisy ones. Comparing a recent window against an earlier baseline
+    window catches that trend.
+    """
+
+    key: str
+    baseline_rate: float  # cost per second over the baseline window
+    recent_rate: float    # cost per second over the recent window
     factor: float
 
 
@@ -95,6 +112,62 @@ def detect_anomalies(stats: dict[str, DimensionStat], factor: float = 3.0) -> li
                         factor=round(s.cost / median, 2))
             )
     return sorted(out, key=lambda a: a.factor, reverse=True)
+
+
+def detect_creep(
+    records: list[UsageRecord],
+    dimension: str = "feature",
+    split_time: float | None = None,
+    factor: float = 2.0,
+) -> list[Creep]:
+    """Flag dimensions whose cost *rate* rose from a baseline window to a recent one.
+
+    Records with ``timestamp < split_time`` form the baseline window; the rest form
+    the recent window. Cost is normalized by each window's duration to get a rate
+    (cost/second), so uneven window lengths compare fairly. A dimension is flagged
+    when its recent rate exceeds ``factor`` times its baseline rate.
+
+    If ``split_time`` is None, the midpoint of the observed timestamp range is used.
+    """
+    timed = [r for r in records if r.timestamp > 0]
+    if len(timed) < 2:
+        return []
+
+    lo = min(r.timestamp for r in timed)
+    hi = max(r.timestamp for r in timed)
+    if hi == lo:
+        return []
+    if split_time is None:
+        split_time = (lo + hi) / 2
+
+    base_dur = max(split_time - lo, 1e-9)
+    recent_dur = max(hi - split_time, 1e-9)
+
+    base_cost: dict[str, float] = {}
+    recent_cost: dict[str, float] = {}
+    for r in timed:
+        key = getattr(r, dimension)
+        if r.timestamp < split_time:
+            base_cost[key] = base_cost.get(key, 0.0) + r.cost
+        else:
+            recent_cost[key] = recent_cost.get(key, 0.0) + r.cost
+
+    out: list[Creep] = []
+    for key, rc in recent_cost.items():
+        base_rate = base_cost.get(key, 0.0) / base_dur
+        recent_rate = rc / recent_dur
+        if base_rate <= 0:
+            continue  # no baseline to compare against; not "creep", it's new
+        if recent_rate > factor * base_rate:
+            out.append(
+                Creep(
+                    key=key,
+                    baseline_rate=round(base_rate, 9),
+                    recent_rate=round(recent_rate, 9),
+                    factor=round(recent_rate / base_rate, 2),
+                )
+            )
+    return sorted(out, key=lambda c: c.factor, reverse=True)
 
 
 def build_report(
