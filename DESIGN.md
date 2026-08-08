@@ -1,4 +1,4 @@
-# RFC 0001: token-lens design, trade-offs, and non-goals
+# token-lens: design, trade-offs, and non-goals
 
 Status: accepted
 Author: Parag Sawant
