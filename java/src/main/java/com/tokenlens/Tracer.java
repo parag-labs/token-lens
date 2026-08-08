@@ -11,7 +11,13 @@ public final class Tracer {
 
     public record UsageRecord(
             String model, long inputTokens, long outputTokens,
-            double latencyMs, String feature, String tenant) {
+            double latencyMs, String feature, String tenant, double timestamp) {
+
+        // Keep the 6-arg form working (timestamp defaults to 0 = "no time info").
+        public UsageRecord(String model, long inputTokens, long outputTokens,
+                           double latencyMs, String feature, String tenant) {
+            this(model, inputTokens, outputTokens, latencyMs, feature, tenant, 0.0);
+        }
 
         public double cost() {
             return Pricing.costOf(model, inputTokens, outputTokens);
@@ -44,6 +50,14 @@ public final class Tracer {
     }
 
     public record Anomaly(String key, String metric, double value, double baseline, double factor) {
+    }
+
+    /**
+     * A dimension whose cost <i>rate</i> is rising over time. The median detector
+     * only catches something expensive relative to its peers right now; comparing a
+     * recent window against an earlier baseline window catches a slow upward trend.
+     */
+    public record Creep(String key, double baselineRate, double recentRate, double factor) {
     }
 
     public record Report(
@@ -103,6 +117,68 @@ public final class Tracer {
         boolean exceeded = budget != null && totalCost > budget;
         return new Report(totalCost, totalCalls, stats, exceeded,
                 detectAnomalies(stats, anomalyFactor));
+    }
+
+    /**
+     * Flag dimensions whose cost rate rose from a baseline window to a recent one.
+     * Records with {@code timestamp < splitTime} form the baseline; the rest form
+     * the recent window. Cost is normalized by each window's duration (cost/second)
+     * so uneven windows compare fairly. When {@code splitTime} is null, the midpoint
+     * of the observed timestamp range is used.
+     */
+    public static List<Creep> detectCreep(List<UsageRecord> records, String dimension,
+                                          Double splitTime, double factor) {
+        List<UsageRecord> timed = new ArrayList<>();
+        for (UsageRecord r : records) {
+            if (r.timestamp() > 0) {
+                timed.add(r);
+            }
+        }
+        if (timed.size() < 2) {
+            return List.of();
+        }
+
+        double lo = Double.POSITIVE_INFINITY;
+        double hi = Double.NEGATIVE_INFINITY;
+        for (UsageRecord r : timed) {
+            lo = Math.min(lo, r.timestamp());
+            hi = Math.max(hi, r.timestamp());
+        }
+        if (hi == lo) {
+            return List.of();
+        }
+
+        double split = splitTime != null ? splitTime : (lo + hi) / 2;
+        double baseDur = Math.max(split - lo, 1e-9);
+        double recentDur = Math.max(hi - split, 1e-9);
+
+        Map<String, Double> baseCost = new LinkedHashMap<>();
+        Map<String, Double> recentCost = new LinkedHashMap<>();
+        for (UsageRecord r : timed) {
+            String key = dimensionOf(r, dimension);
+            if (r.timestamp() < split) {
+                baseCost.merge(key, r.cost(), Double::sum);
+            } else {
+                recentCost.merge(key, r.cost(), Double::sum);
+            }
+        }
+
+        List<Creep> out = new ArrayList<>();
+        for (Map.Entry<String, Double> e : recentCost.entrySet()) {
+            double baseRate = baseCost.getOrDefault(e.getKey(), 0.0) / baseDur;
+            double recentRate = e.getValue() / recentDur;
+            if (baseRate <= 0) {
+                continue; // no baseline to compare against; new, not creep
+            }
+            if (recentRate > factor * baseRate) {
+                out.add(new Creep(e.getKey(),
+                        Math.round(baseRate * 1e9) / 1e9,
+                        Math.round(recentRate * 1e9) / 1e9,
+                        Math.round(recentRate / baseRate * 100.0) / 100.0));
+            }
+        }
+        out.sort(Comparator.comparingDouble(Creep::factor).reversed());
+        return out;
     }
 
     private static String dimensionOf(UsageRecord r, String dimension) {
