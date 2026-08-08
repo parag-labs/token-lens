@@ -30,12 +30,40 @@ class ModelPrice:
 
 # Illustrative list prices (USD / 1M tokens). Update as vendors change them.
 PRICES: dict[str, ModelPrice] = {
-    "gpt-4o": ModelPrice(2.50, 10.00),
-    "gpt-4o-mini": ModelPrice(0.15, 0.60),
-    "o3-mini": ModelPrice(1.10, 4.40),
-    "claude-3.7-sonnet": ModelPrice(3.00, 15.00),
-    "claude-3.5-haiku": ModelPrice(0.80, 4.00),
-    "llama-3.3-70b": ModelPrice(0.20, 0.20),
+    # OpenAI
+    "gpt-4o": ModelPrice(2.5, 10.0),
+    "gpt-4o-mini": ModelPrice(0.15, 0.6),
+    "gpt-4.1": ModelPrice(2.0, 8.0),
+    "gpt-4.1-mini": ModelPrice(0.4, 1.6),
+    "gpt-4.1-nano": ModelPrice(0.1, 0.4),
+    "o3": ModelPrice(2.0, 8.0),
+    "o3-mini": ModelPrice(1.1, 4.4),
+    "o4-mini": ModelPrice(1.1, 4.4),
+    # Anthropic
+    "claude-opus-4": ModelPrice(15.0, 75.0),
+    "claude-sonnet-4": ModelPrice(3.0, 15.0),
+    "claude-3.7-sonnet": ModelPrice(3.0, 15.0),
+    "claude-3.5-sonnet": ModelPrice(3.0, 15.0),
+    "claude-3.5-haiku": ModelPrice(0.8, 4.0),
+    "claude-3-haiku": ModelPrice(0.25, 1.25),
+    # Google
+    "gemini-2.5-pro": ModelPrice(1.25, 10.0),
+    "gemini-2.5-flash": ModelPrice(0.3, 2.5),
+    "gemini-2.0-flash": ModelPrice(0.1, 0.4),
+    "gemini-1.5-pro": ModelPrice(1.25, 5.0),
+    "gemini-1.5-flash": ModelPrice(0.075, 0.3),
+    # Meta Llama
+    "llama-3.3-70b": ModelPrice(0.2, 0.2),
+    "llama-3.1-405b": ModelPrice(3.5, 3.5),
+    "llama-3.1-8b": ModelPrice(0.05, 0.05),
+    # Mistral
+    "mistral-large": ModelPrice(2.0, 6.0),
+    "mistral-small": ModelPrice(0.2, 0.6),
+    # DeepSeek
+    "deepseek-chat": ModelPrice(0.27, 1.1),
+    "deepseek-reasoner": ModelPrice(0.55, 2.19),
+    # xAI
+    "grok-2": ModelPrice(2.0, 10.0),
 }
 
 
