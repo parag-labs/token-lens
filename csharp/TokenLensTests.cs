@@ -129,4 +129,56 @@ public class TokenLensTests
         };
         Assert.Empty(Tracer.DetectCreep(records));
     }
+
+    [Fact]
+    public void StaticIsTheDefaultAndMatchesHelper()
+    {
+        var provider = new StaticPricing();
+        Assert.Equal(12.5, provider.Cost("gpt-4o", 1_000_000, 1_000_000));
+        Assert.Equal(12.5, Pricing.CostOf("gpt-4o", 1_000_000, 1_000_000));
+    }
+
+    [Fact]
+    public void FilePricingLoadsAVersionedBook()
+    {
+        const string book = """
+        { "prices": [ { "model": "gpt-4o", "input_per_million": 2.5, "output_per_million": 10.0 } ] }
+        """;
+        var provider = FilePricing.FromJson(book);
+        Assert.Equal(2.5, provider.Cost("gpt-4o", 1_000_000, 0));
+    }
+
+    [Fact]
+    public void PointInTimeRatingPicksTheEffectiveVersion()
+    {
+        const string book = """
+        { "prices": [
+            { "model": "gpt-4o", "input_per_million": 2.5, "output_per_million": 10.0, "effective_from": 0 },
+            { "model": "gpt-4o", "input_per_million": 2.0, "output_per_million": 8.0, "effective_from": 1000 }
+        ] }
+        """;
+        var provider = FilePricing.FromJson(book);
+        Assert.Equal(2.5, provider.Cost("gpt-4o", 1_000_000, 0, at: 500));
+        Assert.Equal(2.0, provider.Cost("gpt-4o", 1_000_000, 0, at: 1500));
+        Assert.Equal(2.0, provider.Cost("gpt-4o", 1_000_000, 0)); // newest when no timestamp
+    }
+
+    [Fact]
+    public void ChainedFallsBackToTheEmbeddedTable()
+    {
+        var remote = new FilePricing(Array.Empty<PriceEntry>()); // like a failed load
+        var negotiated = new StaticPricing(
+            new Dictionary<string, ModelPrice> { ["acme-1"] = new(1.0, 1.0) });
+        var chain = new ChainedPricing(remote, negotiated, new StaticPricing());
+
+        Assert.Equal(1.0, chain.Cost("acme-1", 1_000_000, 0));
+        Assert.Equal(12.5, chain.Cost("gpt-4o", 1_000_000, 1_000_000));
+    }
+
+    [Fact]
+    public void ChainedThrowsWhenNoProviderKnowsTheModel()
+    {
+        var chain = new ChainedPricing(new FilePricing(Array.Empty<PriceEntry>()), new StaticPricing());
+        Assert.Throws<UnknownModelException>(() => chain.PriceFor("mystery-model"));
+    }
 }
