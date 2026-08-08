@@ -51,13 +51,24 @@ It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus
 
 | Language | Tests | Run |
 |----------|:-----:|-----|
-| Python | 23 | `cd python && pytest -q` |
-| C# (.NET 10) | 15 | `cd csharp && dotnet test` |
-| Java (17+) | 15 | `cd java && mvn test` |
+| Python | 28 | `cd python && pytest -q` |
+| C# (.NET 10) | 19 | `cd csharp && dotnet test` |
+| Java (17+) | 19 | `cd java && mvn test` |
 
 The core cost/aggregation logic - including creep detection and the pricing
 providers below - is pure and identical across all three; the OTel adapter is
-Python-side.
+Python-side. Each language also carries a **stress suite** (`test_stress` /
+`TokenLensStress*`) that proves the scaling properties: aggregation memory bounded by
+dimension cardinality (not record count), exact high-volume totals, and
+order-independent creep detection.
+
+## Design notes and numbers
+
+- **[RFC.md](RFC.md)** - single-pass aggregation, why median (not mean) for
+  anomalies, timestamp-binned creep detection, pricing-as-config, and the non-goals.
+- **[BENCHMARKS.md](BENCHMARKS.md)** - measured memory-vs-cardinality (the key
+  scaling property) and aggregation throughput, with graphs. Reproduce with
+  `python bench/benchmark.py`.
 
 ## Pricing providers
 
