@@ -77,4 +77,56 @@ public class TokenLensTests
         var stats = Tracer.Aggregate(records, "feature");
         Assert.Equal(200.0, stats["f"].AvgLatencyMs);
     }
+
+    private static UsageRecord Rec(string feature, long outTokens, double ts)
+        => new("gpt-4o-mini", 0, outTokens, 10.0, feature, "t", ts);
+
+    [Fact]
+    public void CreepFlagsARisingDimension()
+    {
+        var records = new List<UsageRecord>();
+        for (var t = 0; t < 100; t += 10)
+        {
+            records.Add(Rec("search", 1000, t));
+            records.Add(Rec("summarize", 1000, t));
+        }
+        for (var t = 100; t < 200; t += 10)
+        {
+            records.Add(Rec("search", 1000, t));
+            records.Add(Rec("summarize", 5000, t));
+        }
+
+        var creeps = Tracer.DetectCreep(records, "feature", 100, 2.0);
+        Assert.Contains(creeps, c => c.Key == "summarize");
+        Assert.DoesNotContain(creeps, c => c.Key == "search");
+    }
+
+    [Fact]
+    public void CreepIgnoresBrandNewDimension()
+    {
+        var records = new List<UsageRecord>();
+        for (var t = 0; t < 100; t += 10)
+        {
+            records.Add(Rec("steady", 1000, t));
+        }
+        for (var t = 100; t < 200; t += 10)
+        {
+            records.Add(Rec("steady", 1000, t));
+            records.Add(Rec("brandnew", 9000, t));
+        }
+
+        var creeps = Tracer.DetectCreep(records, "feature", 100);
+        Assert.DoesNotContain(creeps, c => c.Key == "brandnew");
+    }
+
+    [Fact]
+    public void CreepNeedsTimestamps()
+    {
+        var records = new List<UsageRecord>
+        {
+            new("gpt-4o-mini", 10, 10, 5.0, "x"),
+            new("gpt-4o-mini", 10, 10, 5.0, "x"),
+        };
+        Assert.Empty(Tracer.DetectCreep(records));
+    }
 }

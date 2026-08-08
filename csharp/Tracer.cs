@@ -6,7 +6,8 @@ public sealed record UsageRecord(
     long OutputTokens,
     double LatencyMs,
     string Feature = "unknown",
-    string Tenant = "unknown")
+    string Tenant = "unknown",
+    double Timestamp = 0.0)  // epoch seconds; used by the rolling-window creep detector
 {
     public double Cost => Pricing.CostOf(Model, InputTokens, OutputTokens);
     public long TotalTokens => InputTokens + OutputTokens;
@@ -26,6 +27,13 @@ public sealed class DimensionStat(string key)
 }
 
 public sealed record Anomaly(string Key, string Metric, double Value, double Baseline, double Factor);
+
+/// <summary>
+/// A dimension whose cost <i>rate</i> is rising over time. The median detector only
+/// catches something expensive relative to its peers right now; comparing a recent
+/// window against an earlier baseline window catches a slow upward trend.
+/// </summary>
+public sealed record Creep(string Key, double BaselineRate, double RecentRate, double Factor);
 
 public sealed class Report
 {
@@ -97,6 +105,69 @@ public static class Tracer
             BudgetExceeded = budget is not null && totalCost > budget,
             Anomalies = DetectAnomalies(stats, anomalyFactor),
         };
+    }
+
+    /// <summary>
+    /// Flag dimensions whose cost rate rose from a baseline window to a recent one.
+    /// Records with Timestamp &lt; splitTime form the baseline; the rest form the
+    /// recent window. Cost is normalized by each window's duration (cost/second) so
+    /// uneven windows compare fairly. When splitTime is null, the midpoint of the
+    /// observed timestamp range is used.
+    /// </summary>
+    public static List<Creep> DetectCreep(
+        List<UsageRecord> records, string dimension = "feature",
+        double? splitTime = null, double factor = 2.0)
+    {
+        var timed = records.Where(r => r.Timestamp > 0).ToList();
+        if (timed.Count < 2)
+        {
+            return [];
+        }
+
+        var lo = timed.Min(r => r.Timestamp);
+        var hi = timed.Max(r => r.Timestamp);
+        if (hi == lo)
+        {
+            return [];
+        }
+
+        var split = splitTime ?? (lo + hi) / 2;
+        var baseDur = Math.Max(split - lo, 1e-9);
+        var recentDur = Math.Max(hi - split, 1e-9);
+
+        var baseCost = new Dictionary<string, double>();
+        var recentCost = new Dictionary<string, double>();
+        foreach (var r in timed)
+        {
+            var key = Dimension(r, dimension);
+            if (r.Timestamp < split)
+            {
+                baseCost[key] = baseCost.GetValueOrDefault(key) + r.Cost;
+            }
+            else
+            {
+                recentCost[key] = recentCost.GetValueOrDefault(key) + r.Cost;
+            }
+        }
+
+        var outp = new List<Creep>();
+        foreach (var (key, rc) in recentCost)
+        {
+            var baseRate = baseCost.GetValueOrDefault(key) / baseDur;
+            var recentRate = rc / recentDur;
+            if (baseRate <= 0)
+            {
+                continue; // no baseline to compare against; new, not creep
+            }
+
+            if (recentRate > factor * baseRate)
+            {
+                outp.Add(new Creep(key, Math.Round(baseRate, 9), Math.Round(recentRate, 9),
+                    Math.Round(recentRate / baseRate, 2)));
+            }
+        }
+
+        return outp.OrderByDescending(c => c.Factor).ToList();
     }
 
     private static string Dimension(UsageRecord r, string dimension) => dimension switch

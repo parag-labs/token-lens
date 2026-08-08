@@ -52,7 +52,7 @@ It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus
 | Language | Tests | Run |
 |----------|:-----:|-----|
 | Python | 16 | `cd python && pytest -q` |
-| C# (.NET 10) | 7 | `cd csharp && dotnet test` |
+| C# (.NET 10) | 10 | `cd csharp && dotnet test` |
 | Java (17+) | 7 | `cd java && mvn test` |
 
 The core cost/aggregation logic is pure and identical across all three; the creep detector and OTel adapter are Python-side.
