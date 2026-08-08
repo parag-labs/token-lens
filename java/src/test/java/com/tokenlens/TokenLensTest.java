@@ -5,12 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.tokenlens.Pricing.ChainedPricing;
+import com.tokenlens.Pricing.FilePricing;
+import com.tokenlens.Pricing.ModelPrice;
+import com.tokenlens.Pricing.PriceEntry;
+import com.tokenlens.Pricing.StaticPricing;
 import com.tokenlens.Tracer.Creep;
 import com.tokenlens.Tracer.DimensionStat;
 import com.tokenlens.Tracer.UsageRecord;
@@ -131,5 +137,49 @@ class TokenLensTest {
                 new UsageRecord("gpt-4o-mini", 10, 10, 5.0, "x", "t"),
                 new UsageRecord("gpt-4o-mini", 10, 10, 5.0, "x", "t"));
         assertTrue(Tracer.detectCreep(records, "feature", null, 2.0).isEmpty());
+    }
+
+    @Test
+    void staticIsTheDefaultAndMatchesHelper() {
+        StaticPricing provider = new StaticPricing();
+        assertEquals(12.5, provider.cost("gpt-4o", 1_000_000, 1_000_000));
+        assertEquals(12.5, Pricing.costOf("gpt-4o", 1_000_000, 1_000_000));
+    }
+
+    @Test
+    void filePricingLoadsAVersionedBook() {
+        String book = "{ \"prices\": [ { \"model\": \"gpt-4o\", "
+                + "\"input_per_million\": 2.5, \"output_per_million\": 10.0 } ] }";
+        FilePricing provider = FilePricing.fromJson(book);
+        assertEquals(2.5, provider.cost("gpt-4o", 1_000_000, 0));
+    }
+
+    @Test
+    void pointInTimeRatingPicksTheEffectiveVersion() {
+        String book = "{ \"prices\": ["
+                + "{ \"model\": \"gpt-4o\", \"input_per_million\": 2.5, "
+                + "\"output_per_million\": 10.0, \"effective_from\": 0 },"
+                + "{ \"model\": \"gpt-4o\", \"input_per_million\": 2.0, "
+                + "\"output_per_million\": 8.0, \"effective_from\": 1000 } ] }";
+        FilePricing provider = FilePricing.fromJson(book);
+        assertEquals(2.5, provider.cost("gpt-4o", 1_000_000, 0, 500.0));
+        assertEquals(2.0, provider.cost("gpt-4o", 1_000_000, 0, 1500.0));
+        assertEquals(2.0, provider.cost("gpt-4o", 1_000_000, 0)); // newest when no timestamp
+    }
+
+    @Test
+    void chainedFallsBackToTheEmbeddedTable() {
+        FilePricing remote = new FilePricing(new ArrayList<>()); // like a failed load
+        StaticPricing negotiated = new StaticPricing(Map.of("acme-1", new ModelPrice(1.0, 1.0)));
+        ChainedPricing chain = new ChainedPricing(remote, negotiated, new StaticPricing());
+
+        assertEquals(1.0, chain.cost("acme-1", 1_000_000, 0));
+        assertEquals(12.5, chain.cost("gpt-4o", 1_000_000, 1_000_000));
+    }
+
+    @Test
+    void chainedThrowsWhenNoProviderKnowsTheModel() {
+        ChainedPricing chain = new ChainedPricing(new FilePricing(new ArrayList<>()), new StaticPricing());
+        assertThrows(Pricing.UnknownModelException.class, () -> chain.priceFor("mystery-model", null));
     }
 }
