@@ -1,8 +1,9 @@
 name: Publish to PyPI
 
 # Publishes the Python package to PyPI using PyPI Trusted Publishing (OIDC) -
-# no API token/secret is stored. Trigger manually, or it runs when a GitHub
-# Release is published.
+# no API token/secret is stored. Manual trigger only (workflow_dispatch), so it
+# never fires on its own - the parag-labs publisher cuts GitHub Releases, and we
+# don't want a release event to auto-trigger (and fail) a publish.
 #
 # One-time PyPI setup (https://pypi.org/manage/account/publishing/):
 #   PyPI Project Name: token-lens
@@ -12,8 +13,6 @@ name: Publish to PyPI
 #   Environment:       (leave blank)
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
 
 permissions:
