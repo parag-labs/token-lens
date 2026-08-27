@@ -3,12 +3,12 @@
 import io
 import json
 
-from otel_exporter import (
+from token_lens.otel_exporter import (
     export_spans_to_jsonl,
     span_to_record,
     spans_to_records,
 )
-from tracer import UsageRecord, detect_creep
+from token_lens.tracer import UsageRecord, detect_creep
 
 # ---- rolling-window creep detection ----
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import random
 
-from tracer import UsageRecord, aggregate, build_report, detect_creep
+from token_lens.tracer import UsageRecord, aggregate, build_report, detect_creep
 
 
 def _rec(feature: str, out_tokens: int, ts: float = 0.0) -> UsageRecord:
@@ -72,7 +72,7 @@ def test_anomaly_detection_stable_under_large_cardinality():
     for _ in range(200):
         records.append(_rec("whale", 100_000))
     stats = aggregate(records, "feature")
-    from tracer import detect_anomalies
+    from token_lens.tracer import detect_anomalies
 
     anomalies = detect_anomalies(stats, factor=3.0)
     assert any(a.key == "whale" for a in anomalies)

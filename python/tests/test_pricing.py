@@ -7,7 +7,7 @@ import json
 
 import pytest
 
-from pricing import (
+from token_lens.pricing import (
     ChainedPricing,
     FilePricing,
     ModelPrice,

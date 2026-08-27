@@ -1,6 +1,6 @@
 """TokenLens CLI: summarize LLM spend from a JSONL usage log.
 
-    python -m cli usage.jsonl --dimension feature --budget 5.00
+    python -m token_lens usage.jsonl --dimension feature --budget 5.00
 
 Each line is a JSON object: {model, input_tokens, output_tokens, latency_ms, feature, tenant}.
 Exits non-zero if a budget is set and exceeded -- so it works as a CI cost gate.
@@ -12,7 +12,7 @@ import argparse
 import json
 import sys
 
-from tracer import UsageRecord, build_report, detect_creep
+from .tracer import UsageRecord, build_report, detect_creep
 
 
 def load_records(path: str) -> list[UsageRecord]:
@@ -38,7 +38,7 @@ def load_records(path: str) -> list[UsageRecord]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="tokenlens")
+    parser = argparse.ArgumentParser(prog="token-lens")
     parser.add_argument("usage_log")
     parser.add_argument("--dimension", default="feature", choices=["feature", "tenant", "model"])
     parser.add_argument("--budget", type=float, default=None)

@@ -11,3 +11,8 @@ obj/
 # Java
 target/
 *.class
+
+# Python build artifacts
+python/dist/
+python/build/
+**/*.egg-info/

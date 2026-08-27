@@ -2,8 +2,8 @@
 
 import pytest
 
-from pricing import UnknownModelError, cost_of
-from tracer import DimensionStat, UsageRecord, aggregate, build_report, detect_anomalies
+from token_lens.pricing import UnknownModelError, cost_of
+from token_lens.tracer import DimensionStat, UsageRecord, aggregate, build_report, detect_anomalies
 
 
 def test_cost_of_known_model():

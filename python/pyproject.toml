@@ -1,3 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "token-lens"
+version = "0.1.0"
+description = "Attribute LLM cost and latency to feature/tenant/model, with budget and anomaly gates."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Parag Sawant" }]
+keywords = ["llm", "cost", "finops", "observability", "openai", "tokens", "budget", "opentelemetry"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: System :: Monitoring",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/parag-labs/token-lens"
+Repository = "https://github.com/parag-labs/token-lens"
+Issues = "https://github.com/parag-labs/token-lens/issues"
+
+[project.optional-dependencies]
+otel = ["opentelemetry-sdk>=1.20"]
+
+[project.scripts]
+token-lens = "token_lens.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]

@@ -20,8 +20,18 @@ Once you have more than one feature calling an LLM, your bill becomes a black bo
 ## Run it (Python)
 
 ```bash
-cd python
-python src/cli.py sample-usage.jsonl --dimension feature --budget 0.50
+pip install token-lens
+token-lens sample-usage.jsonl --dimension feature --budget 0.50
+```
+
+Or use it as a library:
+
+```python
+from token_lens import UsageRecord, build_report
+
+report = build_report(records, dimension="feature", budget=5.00)
+if report.budget_exceeded:
+    raise SystemExit("over budget")
 ```
 
 ```

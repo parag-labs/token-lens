@@ -19,7 +19,7 @@ from collections.abc import Iterable
 from dataclasses import asdict
 from typing import Any, Protocol, TextIO
 
-from tracer import UsageRecord
+from .tracer import UsageRecord
 
 # OpenTelemetry GenAI semantic-convention attribute keys.
 _MODEL_KEYS = ("gen_ai.request.model", "gen_ai.response.model")

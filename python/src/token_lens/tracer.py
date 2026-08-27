@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from pricing import cost_of
+from .pricing import cost_of
 
 
 @dataclass
