@@ -19,8 +19,10 @@ Once you have more than one feature calling an LLM, your bill becomes a black bo
 
 ## Run it (Python)
 
+Not on PyPI yet - install straight from the repo (the `python/` package ships a `token-lens` CLI):
+
 ```bash
-pip install token-lens
+pip install "git+https://github.com/parag-labs/token-lens.git#subdirectory=python"
 token-lens sample-usage.jsonl --dimension feature --budget 0.50
 ```
 
