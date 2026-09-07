@@ -100,4 +100,19 @@ behind a small provider interface.
 `cost_of(model, in, out)` still works unchanged and uses `StaticPricing` by
 default. The provider model is mirrored across all three languages.
 
+## Layout
+
+```
+token-lens/
+├── python/         reference implementation + the token-lens CLI (pytest, 28 tests)
+├── csharp/         .NET 10 port - Pricing, Tracer, and the stress suite
+├── java/           JDK 17+ port (Maven)
+├── bench/          benchmark.py - memory-vs-cardinality and throughput, writes graphs
+├── docs/diagrams/  the architecture diagrams used in this README
+├── prices.sample.json  an example versioned price book (USD per 1M tokens)
+├── DESIGN.md       single-pass aggregation, median-not-mean, pricing-as-config
+└── BENCHMARKS.md   reproducible numbers with graphs
+```
+
+
 Part of [parag-labs](https://github.com/parag-labs) - small, focused tools for building AI systems you can trust.
