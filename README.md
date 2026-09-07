@@ -126,7 +126,6 @@ token-lens/
 ├── csharp/         .NET 10 port - Pricing, Tracer, and the stress suite
 ├── java/           JDK 17+ port (Maven)
 ├── bench/          benchmark.py - memory-vs-cardinality and throughput, writes graphs
-├── docs/diagrams/  the architecture diagrams used in this README
 ├── prices.sample.json  an example versioned price book (USD per 1M tokens)
 ├── DESIGN.md       single-pass aggregation, median-not-mean, pricing-as-config
 └── BENCHMARKS.md   reproducible numbers with graphs
