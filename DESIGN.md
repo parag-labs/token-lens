@@ -23,7 +23,7 @@ those dimensions, a budget gate, and a heads-up when something is abnormal. Goal
 
 ![cost & latency attribution](docs/diagrams/attribution-flow.png)
 
-*(Source: [`docs/diagrams/attribution-flow.excalidraw`](docs/diagrams/attribution-flow.excalidraw) - editable in [excalidraw](https://aka.ms/excalidraw).)*
+*(The same diagram renders inline as Mermaid in the [README](README.md#how-it-works); this PNG is a static export.)*
 
 ## Key design decisions
 
