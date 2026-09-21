@@ -26,6 +26,13 @@ those dimensions, a budget gate, and a heads-up when something is abnormal. Goal
 *(The [SVG source](docs/diagrams/attribution-flow.svg) stays sharp at any size. The
 README carries a simpler Mermaid sketch of the same flow for inline viewing.)*
 
+<details>
+<summary>Before the redraw - the earlier version of this diagram</summary>
+
+![cost & latency attribution, before the redraw](docs/diagrams/attribution-flow-v1.png)
+
+</details>
+
 ## Key design decisions
 
 **Single-pass aggregation into per-dimension buckets.** `aggregate` walks the
