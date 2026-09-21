@@ -19,11 +19,12 @@ those dimensions, a budget gate, and a heads-up when something is abnormal. Goal
    cost rate is rising over time).
 3. Scale: process a large batch of records with memory that depends on how many
    distinct dimension values there are, not on the record count.
-4. The same behavior in Python, C#, and Java.
+4. The same behavior in Python, Go, Rust, C#, Java, and TypeScript.
 
 ![cost & latency attribution](docs/diagrams/attribution-flow.png)
 
-*(The same diagram renders inline as Mermaid in the [README](README.md#how-it-works); this PNG is a static export.)*
+*(The [SVG source](docs/diagrams/attribution-flow.svg) stays sharp at any size. The
+README carries a simpler Mermaid sketch of the same flow for inline viewing.)*
 
 ## Key design decisions
 
