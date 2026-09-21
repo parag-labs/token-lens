@@ -16,3 +16,10 @@ target/
 python/dist/
 python/build/
 **/*.egg-info/
+
+# Rust
+rust/target/
+rust/Cargo.lock
+
+# Node / TypeScript
+node_modules/

@@ -2,7 +2,7 @@
 
 **Where does your LLM spend actually go?**
 
-TokenLens takes a usage log and tells you - attributing cost and latency to the feature, tenant, or model that caused it, flagging budget breaches and cost anomalies. Same core logic in **Python, C#, and Java**.
+TokenLens takes a usage log and tells you - attributing cost and latency to the feature, tenant, or model that caused it, flagging budget breaches and cost anomalies. Same core logic in **Python, Go, Rust, C#, Java, and TypeScript**.
 
 ## The problem
 
@@ -59,20 +59,28 @@ provider.add_span_processor(BatchSpanProcessor(TokenLensSpanExporter("usage.json
 
 It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus `prompt`/`completion` aliases) and derives latency and timestamp from the span. No OTel SDK is required to use the mapping helpers in tests.
 
-## Three languages, one behavior
+## Six languages, one behavior
 
 | Language | Tests | Run |
 |----------|:-----:|-----|
 | Python | 28 | `cd python && pytest -q` |
+| Go | 38 | `cd go && go test ./...` |
+| Rust | 37 | `cd rust && cargo test` |
 | C# (.NET 10) | 19 | `cd csharp && dotnet test` |
 | Java (17+) | 19 | `cd java && mvn test` |
+| TypeScript | 37 | `cd ts && npm test` |
 
 The core cost/aggregation logic - including creep detection and the pricing
-providers below - is pure and identical across all three; the OTel adapter is
-Python-side. Each language also carries a **stress suite** (`test_stress` /
-`TokenLensStress*`) that proves the scaling properties: aggregation memory bounded by
-dimension cardinality (not record count), exact high-volume totals, and
-order-independent creep detection.
+providers below - is pure and identical across all six; the OTel adapter is
+Python-side. Python, C# and Java additionally carry a **stress suite**
+(`test_stress` / `TokenLensStress*`) that proves the scaling properties:
+aggregation memory bounded by dimension cardinality (not record count), exact
+high-volume totals, and order-independent creep detection.
+
+Two behaviours worth pinning down, because every port matches them exactly:
+the anomaly **median is the upper-middle element** (index `len/2`, so the median
+of `[1,1,10,40]` is 10), and a **timestamp of 0 means "untimed"** - such records
+are skipped by the creep detector rather than treated as time zero.
 
 ## Design notes and numbers
 
@@ -98,7 +106,7 @@ behind a small provider interface.
   so wiring a remote catalog never risks a hard billing failure.
 
 `cost_of(model, in, out)` still works unchanged and uses `StaticPricing` by
-default. The provider model is mirrored across all three languages.
+default. The provider model is mirrored across all six languages.
 
 ## How it works
 
@@ -123,8 +131,11 @@ flowchart LR
 ```
 token-lens/
 ├── python/         reference implementation + the token-lens CLI (pytest, 28 tests)
+├── go/             Go port - pricing.go, tracer.go (38 tests)
+├── rust/           Rust port - pricing.rs, tracer.rs (37 tests)
 ├── csharp/         .NET 10 port - Pricing, Tracer, and the stress suite
 ├── java/           JDK 17+ port (Maven)
+├── ts/             TypeScript port - pricing.ts, tracer.ts (vitest, 37 tests)
 ├── bench/          benchmark.py - memory-vs-cardinality and throughput, writes graphs
 ├── prices.sample.json  an example versioned price book (USD per 1M tokens)
 ├── DESIGN.md       single-pass aggregation, median-not-mean, pricing-as-config

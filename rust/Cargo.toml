@@ -1,0 +1,13 @@
+[package]
+name = "token-lens"
+version = "0.1.0"
+edition = "2021"
+description = "LLM cost attribution: price books, spend aggregation, anomaly and creep detection"
+license = "MIT"
+
+[lib]
+name = "token_lens"
+path = "src/lib.rs"
+
+[dependencies]
+serde_json = "1"
