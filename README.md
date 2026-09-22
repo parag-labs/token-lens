@@ -8,6 +8,12 @@ TokenLens takes a usage log and tells you - attributing cost and latency to the 
 
 Once you have more than one feature calling an LLM, your bill becomes a black box. Which feature 3×'d its spend this week? Which tenant is unprofitable? Nobody knows until finance asks. TokenLens makes spend attributable and puts a **budget gate** in CI.
 
+TokenLens tells you what you spent, after the fact.
+[quota-gate](https://github.com/parag-labs/quota-gate) stops you from overspending or
+getting throttled on the next call.
+[lease-pool](https://github.com/parag-labs/lease-pool) shares one person's budget across
+the separate processes they use the model from.
+
 ## What it does
 
 - **Cost math** from a per-model price table (USD / 1M tokens).
