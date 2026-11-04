@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use token_lens::{
-    aggregate, build_report, detect_anomalies, detect_creep, Dimension, DimensionStat, UsageRecord,
+    Dimension, DimensionStat, UsageRecord, aggregate, build_report, detect_anomalies, detect_creep,
 };
 
 fn approx(got: f64, want: f64) {

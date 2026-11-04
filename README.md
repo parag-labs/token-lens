@@ -67,14 +67,14 @@ It reads the standard `gen_ai.request.model` / `gen_ai.usage.*` attributes (plus
 
 ## Six languages, one behavior
 
-| Language | Tests | Run |
-|----------|:-----:|-----|
-| Python | 28 | `cd python && pytest -q` |
-| Go | 38 | `cd go && go test ./...` |
-| Rust | 37 | `cd rust && cargo test` |
-| C# (.NET 10) | 19 | `cd csharp && dotnet test` |
-| Java (17+) | 19 | `cd java && mvn test` |
-| TypeScript | 37 | `cd ts && npm test` |
+| Language | Toolchain | Tests | Run |
+|----------|-----------|:-----:|-----|
+| Python | 3.11+ (CI: 3.11 and 3.15) | 28 | `cd python && pytest -q` |
+| Go | Go 1.27+ | 38 | `cd go && go test ./...` |
+| Rust | Rust 1.99+ (edition 2024) | 37 | `cd rust && cargo test` |
+| C# | .NET 10 SDK | 19 | `cd csharp && dotnet test` |
+| Java | JDK 25+ (Maven) | 19 | `cd java && mvn test` |
+| TypeScript | Node.js 26 LTS | 37 | `cd ts && npm test` |
 
 The core cost/aggregation logic - including creep detection and the pricing
 providers below - is pure and identical across all six; the OTel adapter is
@@ -140,7 +140,7 @@ token-lens/
 ├── go/             Go port - pricing.go, tracer.go (38 tests)
 ├── rust/           Rust port - pricing.rs, tracer.rs (37 tests)
 ├── csharp/         .NET 10 port - Pricing, Tracer, and the stress suite
-├── java/           JDK 17+ port (Maven)
+├── java/           JDK 25+ port (Maven)
 ├── ts/             TypeScript port - pricing.ts, tracer.ts (vitest, 37 tests)
 ├── bench/          benchmark.py - memory-vs-cardinality and throughput, writes graphs
 ├── prices.sample.json  an example versioned price book (USD per 1M tokens)

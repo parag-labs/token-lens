@@ -19,10 +19,10 @@ pub mod pricing;
 pub mod tracer;
 
 pub use pricing::{
-    cost_of, round6, ChainedPricing, FilePricing, ModelPrice, PriceEntry, PricingProvider,
-    StaticPricing, UnknownModelError,
+    ChainedPricing, FilePricing, ModelPrice, PriceEntry, PricingProvider, StaticPricing,
+    UnknownModelError, cost_of, round6,
 };
 pub use tracer::{
-    aggregate, build_report, detect_anomalies, detect_creep, Anomaly, Creep, Dimension,
-    DimensionStat, Report, UsageRecord,
+    Anomaly, Creep, Dimension, DimensionStat, Report, UsageRecord, aggregate, build_report,
+    detect_anomalies, detect_creep,
 };

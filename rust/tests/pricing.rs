@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use token_lens::{
-    cost_of, round6, ChainedPricing, FilePricing, ModelPrice, PricingProvider, StaticPricing,
+    ChainedPricing, FilePricing, ModelPrice, PricingProvider, StaticPricing, cost_of, round6,
 };
 
 fn approx(got: f64, want: f64) {

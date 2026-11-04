@@ -18,6 +18,7 @@ package tokenlens
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"math"
 	"os"
 	"sort"
@@ -110,9 +111,7 @@ func NewStaticPricing(prices map[string]ModelPrice) *StaticPricing {
 		src = Prices
 	}
 	cp := make(map[string]ModelPrice, len(src))
-	for k, v := range src {
-		cp[k] = v
-	}
+	maps.Copy(cp, src)
 	return &StaticPricing{prices: cp}
 }
 
