@@ -10,8 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Model pricing (USD per 1M tokens) and per-call cost computation.
@@ -98,15 +99,16 @@ public final class Pricing {
                 for (JsonNode row : root.get("prices")) {
                     double effectiveFrom = row.has("effective_from") ? row.get("effective_from").asDouble() : 0.0;
                     entries.add(new PriceEntry(
-                            row.get("model").asText(),
+                            row.get("model").asString(),
                             new ModelPrice(
                                     row.get("input_per_million").asDouble(),
                                     row.get("output_per_million").asDouble()),
                             effectiveFrom));
                 }
                 return new FilePricing(entries);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+            } catch (JacksonException e) {
+                // Jackson 3 exceptions are unchecked; keep the Jackson 2-era contract of UncheckedIOException.
+                throw new UncheckedIOException(new IOException(e.getMessage(), e));
             }
         }
 
